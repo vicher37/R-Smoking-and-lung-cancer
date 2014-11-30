@@ -1,0 +1,40 @@
+# Prevalence of current tobacco use among adults (>=15 years) (%) female and lung cancer mortality rate
+
+tobacco = read.csv("tobacco_female1.csv")
+tobacco1 = subset(tobacco, !is.na(X2000))
+tobacco1 = tobacco1[c(-3, -4)]
+summary(tobacco1)
+
+lung = read.csv("lung female mortality 1.csv")
+
+df = merge(tobacco1, lung, by = "country")
+
+df = df[c("country", "X2000.x", "X2000.y")]
+
+df = subset(df, !is.na(X2000.y))
+summary(df)
+
+qplot(x = X2000.x, y = X2000.y, data = df, 
+    xlab = "percentage of smoker in women",
+    ylab = "lung cancer mortality rate in women", 
+    geom= "freqpoly", stat = "identity")
+    
+m <- lm(df$X2000.y ~ df$X2000.x)
+a <- signif(coef(m)[1], digits = 2)
+b <- signif(coef(m)[2], digits = 2)
+r2 <- format(summary(m)$r.squared, digits = 3)
+textlab <- paste("y = ",b,"x + ",a,", R-squared = ",r2, sep="")
+print(textlab)
+
+ggplot(df, aes(x = X2000.x, y = X2000.y)) +
+    xlab("percentage of smoker in women") +
+    ylab("lung cancer mortality rate in women") +
+    geom_point(shape=1) +    # Use hollow circles
+    geom_smooth(method=lm, formula = y ~ x) +
+    geom_text(aes(x = 20, y = 30, label = textlab), color="black", size=5, parse = FALSE)
+    
+ggsave('smoking_lung_cancer_women.jpeg')
+
+qplot(x = X2000.x, y = X2000.y, data = df, geom = "boxplot")
+
+# regression reference: http://rforpublichealth.blogspot.com/2013/11/ggplot2-cheatsheet-for-scatterplots.html
